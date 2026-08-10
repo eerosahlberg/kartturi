@@ -14,11 +14,20 @@ class UserLocationLayer {
   static const String _layerId = 'user-location-layer';
   static const String _iconId = 'user-location-icon';
 
+  /// The style instance the gizmo was last added to. When the style reloads
+  /// a new [StyleController] is created, so the gizmo must be re-added.
+  static StyleController? _addedStyle;
+
   /// Registers the gizmo sprite image and adds the GeoJSON source + symbol
-  /// layer to the map. Call once after the style has loaded.
+  /// layer to the map. Safe to call more than once: it is a no-op if the
+  /// gizmo is already present on the current style, and re-adds it if the
+  /// style has been reloaded. Call after the style has loaded.
   static Future<void> addToMap(MapController controller) async {
     final style = controller.style;
     if (style == null) return;
+
+    // Already added to this exact style instance -> nothing to do.
+    if (identical(style, _addedStyle)) return;
 
     // 1. Render the gizmo as a sprite image.
     await style.addImageFromCanvas(
@@ -48,6 +57,8 @@ class UserLocationLayer {
         },
       ),
     );
+
+    _addedStyle = style;
   }
 
   /// Updates the gizmo position and heading without recreating the layer.

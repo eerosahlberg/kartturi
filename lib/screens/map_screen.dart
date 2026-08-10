@@ -6,6 +6,8 @@ import 'package:geolocator/geolocator.dart' as geo;
 import 'package:maplibre/maplibre.dart';
 
 import '../map/map_widget.dart';
+import '../map/route_measure_toolbar.dart';
+import '../map/route_measurement_layer.dart';
 import '../permissions/location_permission_handler.dart';
 import '../services/location_service.dart';
 
@@ -28,6 +30,12 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Current compass heading in degrees (0 = north), from the device compass.
   double _bearing = 0.0;
+
+  /// Backs the on-map route measurement visuals and distance calculation.
+  final RouteMeasurementLayer _measurement = RouteMeasurementLayer();
+
+  /// Whether the user is currently placing measurement points on the map.
+  bool _measuring = false;
 
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<geo.Position>? _positionSub;
@@ -152,14 +160,91 @@ class _MapScreenState extends State<MapScreen> {
     return null;
   }
 
+  /// Starts route measurement: enters measuring mode so map taps place points.
+  void _startMeasuring() {
+    setState(() => _measuring = true);
+  }
+
+  /// Called on every map event. While measuring, a tap on the map adds a
+  /// measurement point at the tapped geographic location.
+  void _onMapEvent(MapEvent event) {
+    if (event is! MapEventClick) return;
+    if (!_measuring) return;
+
+    setState(() {
+      _measurement.addPoint(event.point);
+    });
+  }
+
+  /// Removes the most recently added measurement point.
+  void _undoLastPoint() {
+    setState(() => _measurement.removeLastPoint());
+  }
+
+  /// Clears all measurement points and exits measuring mode.
+  void _clearMeasurement() {
+    setState(() {
+      _measurement.clear();
+      _measuring = false;
+    });
+  }
+
+  /// Finishes the measurement, keeping the drawn line + points visible but
+  /// no longer continuing to add points on tap.
+  void _finishMeasuring() {
+    if (!_measuring) return;
+    setState(() => _measuring = false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final hasMeasurement = _measurement.pointCount > 0;
+
     return Scaffold(
-      body: MapWidget(key: _mapWidgetKey),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _centerOnUserLocation,
-        tooltip: 'Oma sijainti',
-        child: const Icon(Icons.my_location),
+      body: Stack(
+        children: [
+          MapWidget(
+            key: _mapWidgetKey,
+            onEvent: _onMapEvent,
+            layers: _measurement.buildLayers(),
+          ),
+          // Live measured distance readout, top-left.
+          if (hasMeasurement)
+            Positioned(
+              top: 0,
+              left: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: RouteMeasureDistanceChip(
+                    distanceMeters: _measurement.totalMeters(),
+                    onClear: _clearMeasurement,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+      // Route measurement buttons above the GPS button.
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          RouteMeasureToolbar(
+            measuring: _measuring,
+            hasMeasurement: hasMeasurement,
+            onStart: _startMeasuring,
+            onUndo: _undoLastPoint,
+            onClear: _clearMeasurement,
+            onFinish: _finishMeasuring,
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton(
+            onPressed: _centerOnUserLocation,
+            tooltip: 'Oma sijainti',
+            child: const Icon(Icons.my_location),
+          ),
+        ],
       ),
     );
   }
