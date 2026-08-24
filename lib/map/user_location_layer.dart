@@ -14,6 +14,10 @@ class UserLocationLayer {
   static const String _layerId = 'user-location-layer';
   static const String _iconId = 'user-location-icon';
 
+  /// Source + layer for the blue see-through accuracy circle.
+  static const String _accuracySourceId = 'user-location-accuracy-source';
+  static const String _accuracyLayerId = 'user-location-accuracy-layer';
+
   /// The style instance the gizmo was last added to. When the style reloads
   /// a new [StyleController] is created, so the gizmo must be re-added.
   static StyleController? _addedStyle;
@@ -37,12 +41,30 @@ class UserLocationLayer {
       painter: _paintGizmo,
     );
 
-    // 2. Add the GeoJSON source with an initial (empty) point.
+    // 2. Add the accuracy circle source + fill layer (drawn beneath the
+    //    gizmo so the dot stays on top).
+    await style.addSource(
+      GeoJsonSource(id: _accuracySourceId, data: _accuracyPolygon(0, 0, 0)),
+    );
+    await style.addLayer(
+      FillStyleLayer(
+        id: _accuracyLayerId,
+        sourceId: _accuracySourceId,
+        paint: {
+          'fill-color': const Color(0xFF2196F3).toHexString(),
+          'fill-opacity': 0.15,
+          'fill-outline-color': const Color(0xFF2196F3).toHexString(),
+          'fill-outline-opacity': 0.4,
+        },
+      ),
+    );
+
+    // 3. Add the GeoJSON source with an initial (empty) point.
     await style.addSource(
       GeoJsonSource(id: _sourceId, data: _featureCollection(0, 0, 0)),
     );
 
-    // 3. Add the symbol layer bound to the source.
+    // 4. Add the symbol layer bound to the source.
     await style.addLayer(
       SymbolStyleLayer(
         id: _layerId,
@@ -61,18 +83,29 @@ class UserLocationLayer {
     _addedStyle = style;
   }
 
-  /// Updates the gizmo position and heading without recreating the layer.
+  /// Updates the gizmo position, heading and accuracy circle without
+  /// recreating the layers.
   ///
   /// [lon]/[lat] are in WGS84 degrees. [heading] is the compass bearing in
-  /// degrees (0 = north, clockwise).
+  /// degrees (0 = north, clockwise). [accuracy] is the horizontal GPS
+  /// accuracy in meters; the see-through circle's diameter equals it.
   static Future<void> updateLocation(
     MapController controller, {
     required double lon,
     required double lat,
     required double heading,
+    required double accuracy,
   }) async {
     final style = controller.style;
     if (style == null) return;
+
+    // Accuracy circle: diameter = accuracy, so radius = accuracy / 2.
+    final radius = accuracy / 2.0;
+    await style.updateGeoJsonSource(
+      id: _accuracySourceId,
+      data: _accuracyPolygon(lon, lat, radius),
+    );
+
     await style.updateGeoJsonSource(
       id: _sourceId,
       data: _featureCollection(lon, lat, heading),
@@ -92,6 +125,43 @@ class UserLocationLayer {
             'coordinates': [lon, lat],
           },
           'properties': {'heading': heading},
+        },
+      ],
+    });
+  }
+
+  /// Builds a GeoJSON FeatureCollection with a single Polygon feature
+  /// approximating a circle of [radius] meters around [lon]/[lat].
+  static String _accuracyPolygon(double lon, double lat, double radius) {
+    if (radius <= 0) {
+      // Degenerate/empty circle: emit an empty feature collection.
+      return jsonEncode({'type': 'FeatureCollection', 'features': []});
+    }
+
+    final center = Geographic(lon: lon, lat: lat);
+    const segments = 36;
+    final ring = <List<double>>[];
+    for (var i = 0; i < segments; i++) {
+      final bearing = i * (360.0 / segments);
+      final p = center.spherical.destinationPoint(
+        distance: radius,
+        bearing: bearing,
+      );
+      ring.add([p.lon, p.lat]);
+    }
+    // Close the linear ring.
+    ring.add(ring.first);
+
+    return jsonEncode({
+      'type': 'FeatureCollection',
+      'features': [
+        {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Polygon',
+            'coordinates': [ring],
+          },
+          'properties': {},
         },
       ],
     });

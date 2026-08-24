@@ -1,0 +1,810 @@
+{
+	"version": 8,
+	"name": "Maastotietokanta",
+	"sprite": "{Sprite server link}",
+	"center": [21.645, 63.101],
+	"zoom": 11.35,
+	"sources": {
+		"korkeussuhteet": {
+			"type": "vector",
+			"tiles": ["{Tile server link}"],
+			"minzoom": 12,
+			"maxzoom": 14
+		},
+		"taustakartta": {
+			"type": "vector",
+			"tiles": ["{Tile server link}"],
+			"minzoom": 12,
+			"maxzoom": 14
+		}
+	},
+	"glyphs": "{Glyph server link}",
+	"layers": [
+		{
+			"id": "background",
+			"type": "background",
+			"paint": {
+				"background-color": "#ffffff"
+			}
+		},
+		{
+			"id": "vesi_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 36200, 36211, 36313],
+			"paint": {
+				"fill-color": "#6ecff6",
+				"fill-outline-color": "#5bb1df"
+			}
+		},
+
+		{
+			"id": "suo_vaikeakulkuinen_puuton",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 35421],
+			"paint": {
+				"fill-pattern": "suo_vaikeakulkuinen_puuton"
+			}
+		},
+		{
+			"id": "suo_vaikeakulkuinen_metsainen",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 35422],
+			"paint": {
+				"fill-pattern": "suo_vaikeakulkuinen_metsainen"
+			}
+		},
+		{
+			"id": "suo_helppokulkuinen_puuton",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 35411],
+			"paint": {
+				"fill-color": "#d7c060",
+				"fill-outline-color": "#b8a94e"
+			}
+		},
+		{
+			"id": "suo_helppokulkuinen_metsainen",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 35412],
+			"paint": {
+				"fill-color": "#c4d8e2",
+				"fill-outline-color": "#b8a94e"
+			}
+		},
+		{
+			"id": "soistuma",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 35300],
+			"paint": {
+				"fill-color": "#e3ecf1",
+				"fill-outline-color": "#b8a94e"
+			}
+		},
+		{
+			"id": "metsa_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 39110],
+			"paint": {
+				"fill-color": "#CDE097",
+				"fill-outline-color": "#a8bd6e"
+			}
+		},
+		{
+			"id": "maatalous_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 32611, 32612, 32800],
+			"paint": {
+				"fill-color": "#EEDCA1",
+				"fill-outline-color": "#d8c47e"
+			}
+		},
+		{
+			"id": "suojelualue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 84200],
+			"paint": {
+				"fill-color": "#d8e6c8",
+				"fill-opacity": 0.5,
+				"fill-outline-color": "#9db87a"
+			}
+		},
+		{
+			"id": "urheilu- ja virkistysalue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 33100],
+			"paint": {
+				"fill-color": "#e6ff80",
+				"fill-outline-color": "#000000"
+			}
+		},
+		{
+			"id": "puisto",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32900],
+			"paint": {
+				"fill-color": "#b3ff66",
+				"fill-outline-color": "#000000"
+			}
+		},
+		{
+			"id": "kallio_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 34100, 34700],
+			"paint": {
+				"fill-color": "#D6C5C5",
+				"fill-outline-color": "#b8a4a4"
+			}
+		},
+		{
+			"id": "vesi_viiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 36311, 36312],
+			"paint": {
+				"line-color": "#4fa5d7",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.75, 20, 12]
+			}
+		},
+		{
+			"id": "maastoaluereuna",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 30211, 30212],
+			"paint": {
+				"line-color": "#c8c4c5",
+				"line-width": 0.5
+			}
+		},
+
+		{
+			"id": "korkeuskayra_johto",
+			"type": "line",
+			"source": "korkeussuhteet",
+			"source-layer": "korkeussuhteet",
+			"filter": ["all", ["==", ["get", "kohdeluokka"], 52100], ["==", ["%", ["/", ["get", "korkeusarvo"], 1000], 20], 0]],
+			"paint": {
+				"line-color": "#ab5700",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1.5, 20, 25]
+			}
+		},
+		{
+			"id": "korkeuskayra_vali",
+			"type": "line",
+			"source": "korkeussuhteet",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"all",
+				["==", ["get", "kohdeluokka"], 52100],
+				["==", ["%", ["/", ["get", "korkeusarvo"], 1000], 5], 0],
+				["!=", ["%", ["/", ["get", "korkeusarvo"], 1000], 20], 0]
+			],
+			"paint": {
+				"line-color": "#ab5700",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.75, 20, 12]
+			}
+		},
+		{
+			"id": "korkeuskayra_apu",
+			"type": "line",
+			"source": "korkeussuhteet",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"all",
+				["==", ["get", "kohdeluokka"], 52100],
+				["==", ["%", ["/", ["get", "korkeusarvo"], 100], 25], 0],
+				["!=", ["%", ["/", ["get", "korkeusarvo"], 1000], 5], 0]
+			],
+			"paint": {
+				"line-color": "#ab5700",
+				"line-dasharray": [5, 1],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.75, 20, 12]
+			}
+		},
+		{
+			"id": "rakennus",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42220, 42221, 42222, 42241, 42242, 42251, 42252],
+			"paint": {
+				"fill-color": "#ff33ff",
+				"fill-outline-color": "#1A1A1A"
+			}
+		},
+		{
+			"id": "asuinrakennus",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42110, 42211, 42212],
+			"paint": {
+				"fill-color": "#333333",
+				"fill-outline-color": "#000000"
+			}
+		},
+		{
+			"id": "lomarakennus",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42130, 42231, 42232],
+			"paint": {
+				"fill-color": "#00a99d",
+				"fill-outline-color": "#1A1A1A"
+			}
+		},
+		{
+			"id": "muu_rakennus",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42260, 42261, 42262],
+			"paint": {
+				"fill-color": "#d1d2d4",
+				"fill-outline-color": "#1A1A1A"
+			}
+		},
+		{
+			"id": "jyrkanne",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 34400],
+			"layout": {
+				"icon-image": "jyrkanne",
+				"icon-size": 1,
+				"symbol-placement": "line",
+				"symbol-spacing": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 6, 20, 20],
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "top",
+				"icon-rotation-alignment": "map"
+			}
+		},
+		{
+			"id": "jyrkanne_viiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 34400],
+			"paint": {
+				"line-color": "#222222",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 2, 20, 25]
+			}
+		},
+		{
+			"id": "kivi",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 34600, 38513],
+			"layout": {
+				"icon-image": "kivi",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "kivi_vedenalainen",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 38511],
+			"layout": {
+				"icon-image": "kivi_vedenalainen",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "kari",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 38512],
+			"layout": {
+				"icon-image": "kari",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "korkeus_piste",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 52191, 36291],
+			"layout": {
+				"text-field": ["coalesce", ["get", "teksti"], ""],
+				"text-font": ["Liberation Sans NLSFI"],
+				"text-size": 10
+			},
+			"paint": {
+				"text-color": "#A66329",
+				"text-halo-color": "#fff",
+				"text-halo-width": 1
+			}
+		},
+		{
+			"id": "talvitie_v",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 12312],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [6, 1],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.75, 20, 15],
+				"line-offset": ["interpolate", ["exponential", 1.55], ["zoom"], 6, -1, 20, -10]
+			}
+		},
+		{
+			"id": "talvitie_o",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 12312],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [6, 1],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.75, 20, 15],
+				"line-offset": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1, 20, 10]
+			}
+		},
+		{
+			"id": "ajopolku",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 12316],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [8, 2],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1, 20, 20]
+			}
+		},
+		{
+			"id": "polku",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 12313],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [5, 1],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.8, 20, 20]
+			}
+		},
+		{
+			"id": "kavely- ja pyoratie",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", ["get", "kohdeluokka"], 12314],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [5, 2],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 0.5, 20, 15]
+			}
+		},
+		{
+			"id": "ajotie",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 12141],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1.5, 20, 20]
+			}
+		},
+		{
+			"id": "autotie_reuna",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 12111, 12112, 12121, 12122, 12131, 12132],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 3.5, 20, 56]
+			}
+		},
+		{
+			"id": "autotie_taytto",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 12111, 12112, 12121, 12122, 12131, 12132],
+			"paint": {
+				"line-color": "#CC3333",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 2, 20, 50]
+			}
+		},
+		{
+			"id": "havumetsa",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32710],
+			"layout": {
+				"icon-image": "havumetsa",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "lehtimetsa",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32713],
+			"layout": {
+				"icon-image": "lehtimetsa",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "sekametsa",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32714],
+			"layout": {
+				"icon-image": "sekametsa",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "pensaikko",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32719],
+			"layout": {
+				"icon-image": "pensaikko",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "tulentekopaikka",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 45710],
+			"layout": {
+				"icon-image": "tulentekopaikka",
+				"icon-size": 0.2,
+				"icon-allow-overlap": true,
+				"icon-ignore-placement": true,
+				"icon-anchor": "center"
+			}
+		},
+		{
+			"id": "lautta ja lossi",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["all", ["in", "kohdeluokka", 12151, 12152]],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [4, 4],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1, 20, 20]
+			}
+		},
+		{
+			"id": "laiva ja venevaylat",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["all", ["in", "kohdeluokka", 16511, 16512]],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-dasharray": [5, 5],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1, 20, 20]
+			}
+		},
+		{
+			"id": "hallintorajat",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 72500],
+			"paint": {
+				"line-color": "#502050",
+				"line-width": 1
+			}
+		},
+		{
+			"id": "rakennelmat",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42131, 42161],
+			"paint": {
+				"line-color": "#1A1A1A",
+				"line-width": 0.8
+			}
+		},
+		{
+			"id": "tienimet",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"in",
+				["get", "kohdeluokka"],
+				12111,
+				12112,
+				12121,
+				12122,
+				12131,
+				12132,
+				12141,
+				12312,
+				12313,
+				12314,
+				12316
+			],
+			"layout": {
+				"text-field": [
+					"format",
+					["coalesce", ["get", "nimi_suomi"], ""],
+					{},
+					["case", ["all", ["has", "nimi_ruotsi"], ["!=", ["get", "nimi_ruotsi"], ""]], "        ", ""],
+					{},
+					["coalesce", ["get", "nimi_ruotsi"], ""],
+					{}
+				],
+				"text-font": ["Liberation Sans NLSFI"],
+				"symbol-placement": "line",
+				"text-size": 11
+			},
+			"paint": {
+				"text-color": "rgba(69, 86, 71, 1)",
+				"text-halo-color": "#fff",
+				"text-halo-width": 1,
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "tienumerot",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 12106, 12181, 12182, 12183],
+			"layout": {
+				"text-field": ["coalesce", ["get", "teksti"], ""],
+				"text-font": ["Liberation Sans NLSFI"],
+				"text-size": 11
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(0, 0%, 15%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "nimisto_vesistot",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 36101, 36201, 36301, 36410, 36420, 36490, 38201, 38501],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-font": ["Liberation Sans NLSFI"],
+				"text-size": 12
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(251, 71%, 50%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "nimisto_maasto",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"in",
+				"kohdeluokka",
+				32101,
+				32201,
+				32301,
+				32401,
+				32501,
+				32901,
+				33001,
+				33101,
+				34601,
+				34901,
+				35010,
+				35020,
+				35030,
+				35040,
+				35050,
+				35060,
+				35070,
+				35080,
+				35090,
+				35101
+			],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-font": ["Liberation Sans NLSFI Right"],
+				"text-size": 12
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(0, 0%, 20%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "nimisto_asutus",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42101, 42201, 44301, 44901, 48111, 48112, 48120, 48130, 48190],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-transform": ["case", ["in", ["get", "kohdeluokka"], 44301, 44901, 48120], "uppercase", "none"],
+				"text-size": 12
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(0, 0%, 15%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "nimisto_suojellut",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 72201, 72303, 72403, 72502, 72601, 72701, 72801],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-font": ["Liberation Sans NLSFI"],
+				"text-size": 12
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(117, 79%, 31%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "nimisto_kunnat",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 84301, 84302, 84303],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-font": ["Liberation Sans NLSFI Bold"],
+				"text-size": ["interpolate", ["exponential", 1.35], ["zoom"], 1, 16, 14, 28]
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgb(255, 255, 255)",
+				"text-color": "hsl(0, 0%, 25%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "selitteet",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"in",
+				"kohdeluokka",
+				12302,
+				16102,
+				26202,
+				32102,
+				32202,
+				32302,
+				32402,
+				32502,
+				32602,
+				32902,
+				33002,
+				33102,
+				34902,
+				35102,
+				36500,
+				38902,
+				39502,
+				42102,
+				42202,
+				44202,
+				44302,
+				44402,
+				44902,
+				45002,
+				45402,
+				45502,
+				45702,
+				45802,
+				62102,
+				62202,
+				72202,
+				72304,
+				72404,
+				72501,
+				72603,
+				72604,
+				72702,
+				72802,
+				82102,
+				82202,
+				82302,
+				82402,
+				85100,
+				95302
+			],
+			"layout": {
+				"text-field": ["get", "teksti"],
+				"text-font": ["Liberation Sans NLSFI"],
+				"text-size": 10
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(0, 0%, 15%)",
+				"text-halo-blur": 1
+			}
+		}
+	],
+	"id": "NLS-Basemap"
+}

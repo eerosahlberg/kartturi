@@ -80,6 +80,7 @@ class MapWidgetState extends State<MapWidget> {
     required double lon,
     required double lat,
     required double heading,
+    double accuracy = 0,
   }) async {
     final c = _controller;
     if (c == null) return;
@@ -88,6 +89,7 @@ class MapWidgetState extends State<MapWidget> {
       lon: lon,
       lat: lat,
       heading: heading,
+      accuracy: accuracy,
     );
   }
 
@@ -100,7 +102,7 @@ class MapWidgetState extends State<MapWidget> {
         initCenter:
             _initialCenter ?? const Geographic(lon: 24.9354, lat: 60.1695),
         gestures: MapGestures.all(),
-        minZoom: 10,
+        minZoom: 12,
         maxZoom: 24,
       ),
       onMapCreated: (controller) async {

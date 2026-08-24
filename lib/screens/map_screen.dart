@@ -8,6 +8,8 @@ import 'package:maplibre/maplibre.dart';
 import '../map/map_widget.dart';
 import '../map/route_measure_toolbar.dart';
 import '../map/route_measurement_layer.dart';
+import '../map/route_tracking_layer.dart';
+import '../map/route_tracking_toolbar.dart';
 import '../permissions/location_permission_handler.dart';
 import '../services/location_service.dart';
 
@@ -28,6 +30,9 @@ class _MapScreenState extends State<MapScreen> {
   /// The user's real GPS position (used to place the gizmo on the map).
   Geographic? _userLocation;
 
+  /// The horizontal GPS accuracy in meters (diameter of the accuracy circle).
+  double _accuracy = 0;
+
   /// Current compass heading in degrees (0 = north), from the device compass.
   double _bearing = 0.0;
 
@@ -36,6 +41,9 @@ class _MapScreenState extends State<MapScreen> {
 
   /// Whether the user is currently placing measurement points on the map.
   bool _measuring = false;
+
+  /// Backs the on-map GPS route tracking visuals and distance/speed calc.
+  final RouteTrackingLayer _tracking = RouteTrackingLayer();
 
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<geo.Position>? _positionSub;
@@ -64,25 +72,36 @@ class _MapScreenState extends State<MapScreen> {
       lon: loc.lon,
       lat: loc.lat,
       heading: _bearing,
+      accuracy: _accuracy,
     );
   }
 
   void _startLocationUpdates() {
     // Update GPS location every second.
+    //
+    // Use AndroidSettings.intervalDuration to control the update frequency
+    // (default is 5000ms). Do NOT set `timeLimit` here: it is a *timeout*
+    // that closes the stream when no update arrives within the duration,
+    // which would stop continuous GPS updates.
     _positionSub?.cancel();
     _positionSub =
         geo.Geolocator.getPositionStream(
-          locationSettings: const geo.LocationSettings(
+          locationSettings: geo.AndroidSettings(
             accuracy: geo.LocationAccuracy.high,
-            timeLimit: Duration(seconds: 1),
+            intervalDuration: Duration(seconds: 1),
           ),
         ).listen((position) {
           if (!mounted) return;
+          final loc = Geographic(
+            lon: position.longitude,
+            lat: position.latitude,
+          );
           setState(() {
-            _userLocation = Geographic(
-              lon: position.longitude,
-              lat: position.latitude,
-            );
+            _userLocation = loc;
+            _accuracy = position.accuracy;
+            // Record the position into the active tracking session (no-op
+            // when not tracking or paused).
+            _tracking.addPoint(loc);
           });
           _pushLocationUpdate();
         });
@@ -196,9 +215,31 @@ class _MapScreenState extends State<MapScreen> {
     setState(() => _measuring = false);
   }
 
+  /// Starts a new GPS route tracking session.
+  void _startTracking() {
+    setState(() => _tracking.start());
+  }
+
+  /// Pauses the active tracking session.
+  void _pauseTracking() {
+    setState(() => _tracking.pause());
+  }
+
+  /// Resumes a paused tracking session.
+  void _resumeTracking() {
+    setState(() => _tracking.resume());
+  }
+
+  /// Ends the active tracking session, keeping the drawn path visible.
+  void _stopTracking() {
+    setState(() => _tracking.end());
+  }
+
   @override
   Widget build(BuildContext context) {
     final hasMeasurement = _measurement.pointCount > 0;
+    final tracking = _tracking.isTracking;
+    final hasTrack = _tracking.pointCount > 0;
 
     return Scaffold(
       body: Stack(
@@ -206,7 +247,7 @@ class _MapScreenState extends State<MapScreen> {
           MapWidget(
             key: _mapWidgetKey,
             onEvent: _onMapEvent,
-            layers: _measurement.buildLayers(),
+            layers: [..._measurement.buildLayers(), ..._tracking.buildLayers()],
           ),
           // Live measured distance readout, top-left.
           if (hasMeasurement)
@@ -223,9 +264,25 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             ),
+          // Live tracking info (speed + distance), top-right.
+          if (tracking || hasTrack)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: RouteTrackingInfoPanel(
+                    speedKmh: _tracking.speedKmh(),
+                    distanceMeters: _tracking.totalMeters(),
+                    paused: _tracking.isPaused,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
-      // Route measurement buttons above the GPS button.
+      // Route measurement + tracking buttons above the GPS button.
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -237,6 +294,15 @@ class _MapScreenState extends State<MapScreen> {
             onUndo: _undoLastPoint,
             onClear: _clearMeasurement,
             onFinish: _finishMeasuring,
+          ),
+          const SizedBox(height: 8),
+          RouteTrackingToolbar(
+            tracking: tracking,
+            paused: _tracking.isPaused,
+            onStart: _startTracking,
+            onPause: _pauseTracking,
+            onResume: _resumeTracking,
+            onStop: _stopTracking,
           ),
           const SizedBox(height: 8),
           FloatingActionButton(

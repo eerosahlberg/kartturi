@@ -2,5 +2,6 @@
 	"cmake.sourceDirectory": "/home/eero/kartturi/kartturi/linux",
 	"chat.tools.terminal.autoApprove": {
 		"flutter": true
-	}
+	},
+	"cSpell.words": ["Kartturi"]
 }
