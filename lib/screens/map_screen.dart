@@ -6,12 +6,15 @@ import 'package:geolocator/geolocator.dart' as geo;
 import 'package:maplibre/maplibre.dart';
 
 import '../map/map_widget.dart';
+import '../map/offline_area_layer.dart';
+import '../map/offline_manager_panel.dart';
 import '../map/route_measure_toolbar.dart';
 import '../map/route_measurement_layer.dart';
 import '../map/route_tracking_layer.dart';
 import '../map/route_tracking_toolbar.dart';
 import '../permissions/location_permission_handler.dart';
 import '../services/location_service.dart';
+import '../services/offline_service.dart';
 
 /// The maximum zoom level the tile API provides. Zooming beyond this
 /// returns blank/white tiles.
@@ -45,6 +48,18 @@ class _MapScreenState extends State<MapScreen> {
   /// Backs the on-map GPS route tracking visuals and distance/speed calc.
   final RouteTrackingLayer _tracking = RouteTrackingLayer();
 
+  /// Backs the on-map offline download area rectangle rendering.
+  final OfflineAreaLayer _offlineArea = OfflineAreaLayer();
+
+  /// Whether the user is currently drawing an offline download rectangle.
+  bool _drawingOfflineArea = false;
+
+  /// Currently downloaded offline regions, refreshed on open.
+  List<OfflineRegion> _offlineRegions = const [];
+
+  /// Total offline database size in bytes.
+  int? _offlineTotalBytes;
+
   StreamSubscription<CompassEvent>? _compassSub;
   StreamSubscription<geo.Position>? _positionSub;
 
@@ -61,6 +76,7 @@ class _MapScreenState extends State<MapScreen> {
   void dispose() {
     _compassSub?.cancel();
     _positionSub?.cancel();
+    OfflineService.instance.dispose();
     super.dispose();
   }
 
@@ -185,14 +201,184 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   /// Called on every map event. While measuring, a tap on the map adds a
-  /// measurement point at the tapped geographic location.
+  /// measurement point at the tapped geographic location. While drawing an
+  /// offline area, two taps define the rectangle corners.
   void _onMapEvent(MapEvent event) {
     if (event is! MapEventClick) return;
-    if (!_measuring) return;
+
+    // Offline area drawing takes priority over measurement.
+    if (_drawingOfflineArea) {
+      _onOfflineAreaTap(event);
+      return;
+    }
+
+    if (_measuring) {
+      setState(() {
+        _measurement.addPoint(event.point);
+      });
+    }
+  }
+
+  /// Handles a tap while drawing the offline download rectangle.
+  void _onOfflineAreaTap(MapEventClick event) {
+    if (!_offlineArea.isComplete) {
+      // First tap sets the first corner; second tap completes the rectangle.
+      setState(() {
+        if (_offlineArea.hasSelection) {
+          _offlineArea.setSecondCorner(event.point);
+        } else {
+          _offlineArea.setFirstCorner(event.point);
+        }
+      });
+      if (_offlineArea.isComplete) {
+        _confirmOfflineDownload();
+      }
+    }
+  }
+
+  /// Shows a confirmation dialog for the drawn rectangle and starts the
+  /// offline download if confirmed.
+  Future<void> _confirmOfflineDownload() async {
+    final corners = _offlineArea.corners;
+    if (corners.length != 4) return;
+
+    final bounds = LngLatBounds.fromPoints(corners);
+    final name = _regionName(bounds);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Lataa alue offline'),
+        content: Text(
+          'Ladataanko alue "$name"\n'
+          '(zoom 12–14) offline-käyttöön?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Peruuta'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Lataa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) {
+      setState(() => _offlineArea.clear());
+      return;
+    }
 
     setState(() {
-      _measurement.addPoint(event.point);
+      _drawingOfflineArea = false;
+      _offlineArea.clear();
     });
+
+    await _runDownload(bounds, name);
+  }
+
+  /// Streams the offline download progress for [bounds] and shows feedback.
+  Future<void> _runDownload(LngLatBounds bounds, String name) async {
+    if (!OfflineService.instance.isSupported) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Offline-lataus ei ole tuettu.')),
+      );
+      return;
+    }
+
+    // Simple progress reporting via a dialog that closes when done.
+    if (!mounted) return;
+    final progress = ValueNotifier<double>(0);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => _DownloadProgressDialog(
+        title: name,
+        progress: progress,
+      ),
+    );
+
+    try {
+      await for (final p in OfflineService.instance.downloadRegion(
+        bounds,
+        name: name,
+      )) {
+        final v = p.progress;
+        if (v != null) progress.value = v.clamp(0, 1);
+      }
+      progress.value = 1;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Offline-lataus valmis.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lataus epäonnistui: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop(); // close dialog
+      }
+      await _refreshOfflineRegions();
+    }
+  }
+
+  /// Opens the offline manager bottom sheet.
+  Future<void> _openOfflineManager() async {
+    await _refreshOfflineRegions();
+    if (!mounted) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => OfflineManagerPanel(
+        regions: _offlineRegions,
+        totalBytes: _offlineTotalBytes,
+        onDrawArea: () {
+          Navigator.of(context).pop();
+          _startDrawingOfflineArea();
+        },
+        onDelete: _deleteOfflineRegion,
+      ),
+    );
+  }
+
+  /// Enters offline-area drawing mode.
+  void _startDrawingOfflineArea() {
+    setState(() {
+      _offlineArea.clear();
+      _drawingOfflineArea = true;
+    });
+  }
+
+  /// Deletes an offline region and refreshes the list.
+  Future<void> _deleteOfflineRegion(int regionId) async {
+    await OfflineService.instance.deleteRegion(regionId);
+    await _refreshOfflineRegions();
+    if (mounted) setState(() {});
+  }
+
+  /// Refreshes the cached list of offline regions and total storage size.
+  Future<void> _refreshOfflineRegions() async {
+    final regions = await OfflineService.instance.listRegions();
+    final bytes = await OfflineService.instance.offlineDatabaseBytes();
+    if (!mounted) return;
+    setState(() {
+      _offlineRegions = regions;
+      _offlineTotalBytes = bytes;
+    });
+  }
+
+  /// Generates a human-friendly name for an offline region from its bounds.
+  static String _regionName(LngLatBounds b) {
+    final lat = (b.latitudeNorth + b.latitudeSouth) / 2;
+    final lon = (b.longitudeWest + b.longitudeEast) / 2;
+    return '${lat.toStringAsFixed(3)}, ${lon.toStringAsFixed(3)}';
   }
 
   /// Removes the most recently added measurement point.
@@ -247,7 +433,11 @@ class _MapScreenState extends State<MapScreen> {
           MapWidget(
             key: _mapWidgetKey,
             onEvent: _onMapEvent,
-            layers: [..._measurement.buildLayers(), ..._tracking.buildLayers()],
+            layers: [
+              ..._measurement.buildLayers(),
+              ..._tracking.buildLayers(),
+              ..._offlineArea.buildLayers(),
+            ],
           ),
           // Live measured distance readout, top-left.
           if (hasMeasurement)
@@ -280,6 +470,23 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             ),
+          // Hint while drawing the offline download area.
+          if (_drawingOfflineArea)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _OfflineDrawHint(
+                      firstCornerPlaced: _offlineArea.hasSelection,
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
       // Route measurement + tracking buttons above the GPS button.
@@ -305,12 +512,101 @@ class _MapScreenState extends State<MapScreen> {
             onStop: _stopTracking,
           ),
           const SizedBox(height: 8),
+          FloatingActionButton.small(
+            heroTag: 'offline-manager',
+            tooltip: _drawingOfflineArea
+                ? 'Peruuta alueen piirto'
+                : 'Offline-kartat',
+            backgroundColor: _drawingOfflineArea
+                ? Theme.of(context).colorScheme.error
+                : Theme.of(context).colorScheme.surface,
+            foregroundColor: _drawingOfflineArea
+                ? Theme.of(context).colorScheme.onError
+                : Theme.of(context).colorScheme.onSurface,
+            onPressed: _drawingOfflineArea
+                ? () => setState(() {
+                      _offlineArea.clear();
+                      _drawingOfflineArea = false;
+                    })
+                : _openOfflineManager,
+            child: Icon(
+              _drawingOfflineArea ? Icons.close : Icons.download_for_offline,
+            ),
+          ),
+          const SizedBox(height: 8),
           FloatingActionButton(
             onPressed: _centerOnUserLocation,
             tooltip: 'Oma sijainti',
             child: const Icon(Icons.my_location),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A small hint chip shown while the user draws an offline download area.
+class _OfflineDrawHint extends StatelessWidget {
+  const _OfflineDrawHint({required this.firstCornerPlaced});
+
+  final bool firstCornerPlaced;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: colorScheme.inverseSurface,
+      borderRadius: BorderRadius.circular(24),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          firstCornerPlaced
+              ? 'Aseta toinen kulma'
+              : 'Valitse alueen ensimmäinen kulma',
+          style: TextStyle(
+            color: colorScheme.onInverseSurface,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A dialog that reports the offline download progress.
+class _DownloadProgressDialog extends StatelessWidget {
+  const _DownloadProgressDialog({required this.title, required this.progress});
+
+  final String title;
+  final ValueNotifier<double> progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(title),
+      content: ValueListenableBuilder<double>(
+        valueListenable: progress,
+        builder: (context, value, _) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Ladataan offline-karttaa…',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              LinearProgressIndicator(value: value),
+              const SizedBox(height: 8),
+              Text(
+                '${(value * 100).toStringAsFixed(0)} %',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -160,3 +160,5 @@ app.*.map.json
 /android/app/release
 
 assets/style.json
+assets/offline_style.json
+assets/static

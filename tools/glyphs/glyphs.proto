@@ -1,0 +1,36 @@
+syntax = "proto2";
+
+// Protobuf schema for MapLibre / Mapbox glyph PBF files.
+// See: https://github.com/mapbox/mapbox-gl-js/blob/main/src/glyphs/glyphs.proto
+package mapbox.glyphs;
+
+message glyph {
+  required uint32 id = 1;
+
+  // A signed distance field for the glyph.
+  optional bytes bitmap = 2;
+
+  // Width of the bitmap.
+  optional uint32 width = 3;
+
+  // Height of the bitmap.
+  optional uint32 height = 4;
+
+  // Left offset of the bitmap.
+  optional sint32 left = 5;
+
+  // Top offset of the bitmap.
+  optional sint32 top = 6;
+
+  // Advance width of the glyph, in "text units".
+  optional uint32 advance = 7;
+}
+
+message fontstack {
+  required string name = 1;
+
+  // Range 0-255
+  optional string range = 2;
+
+  repeated glyph glyphs = 3;
+}
