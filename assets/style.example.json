@@ -1,24 +1,24 @@
 {
 	"version": 8,
 	"name": "Maastotietokanta",
-	"sprite": "{Sprite server link}",
+	"sprite": "YOUR-SPRITE-SERVER",
 	"center": [21.645, 63.101],
 	"zoom": 11.35,
 	"sources": {
 		"korkeussuhteet": {
 			"type": "vector",
-			"tiles": ["{Tile server link}"],
+			"tiles": ["YOUR-TILE-SOURCE/{z}/{x}/{y}.mvt"],
 			"minzoom": 12,
 			"maxzoom": 14
 		},
 		"taustakartta": {
 			"type": "vector",
-			"tiles": ["{Tile server link}"],
+			"tiles": ["YOUR-TILE-SOURCE/{z}/{x}/{y}.mvt"],
 			"minzoom": 12,
 			"maxzoom": 14
 		}
 	},
-	"glyphs": "{Glyph server link}",
+	"glyphs": "YOUR-GLYPH-SOURCE/{fontstack}/{range}.pbf",
 	"layers": [
 		{
 			"id": "background",
@@ -119,7 +119,7 @@
 			"type": "fill",
 			"source": "taustakartta",
 			"source-layer": "korkeussuhteet",
-			"filter": ["==", "kohdeluokka", 84200],
+			"filter": ["in", "kohdeluokka", 84200, 72200],
 			"paint": {
 				"fill-color": "#d8e6c8",
 				"fill-opacity": 0.5,
@@ -160,6 +160,98 @@
 			}
 		},
 		{
+			"id": "taajamaalue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 40200],
+			"paint": {
+				"fill-color": "rgba(220,199,199,0.4)"
+			}
+		},
+		{
+			"id": "maankaytto",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 32200, 34300],
+			"paint": {
+				"fill-color": ["match", ["get", "kohdeluokka"], 32200, "#eef6e0", 34300, "#fffcf0", "hsla(360, 100%, 100%, 0)"]
+			}
+		},
+		{
+			"id": "lentokentta_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 32411, 32412, 32413, 32414, 32415, 32416, 32417, 32418, 32441, 32442],
+			"paint": {
+				"fill-color": [
+					"match",
+					["get", "kohdeluokka"],
+					[32411, 32412],
+					"#fde9db",
+					[32413, 32415, 32416, 32441, 32442],
+					"#f7f7f3",
+					[32414, 32417, 32418],
+					"#fffcf4",
+					"hsl(0,0%,80%)"
+				],
+				"fill-outline-color": ["match", ["get", "kohdeluokka"], [32441, 32442], "#c8c4c5", "hsla(360, 100%, 100%, 0)"]
+			}
+		},
+		{
+			"id": "maasto_alue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 33000, 35401, 35402, 38300, 38400, 38700, 39120, 39130],
+			"paint": {
+				"fill-color": [
+					"match",
+					["get", "kohdeluokka"],
+					[35401, 35402],
+					"hsla(200, 80%, 90%, 0.7)",
+					[38300, 38700],
+					"hsl(207, 100%, 94%)",
+					[39120],
+					"hsla(44, 100%, 83%, 0.84)",
+					"hsla(360, 100%, 100%, 0)"
+				]
+			}
+		},
+		{
+			"id": "autoliikennealue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 32421],
+			"paint": {
+				"fill-color": "#ffb280"
+			}
+		},
+		{
+			"id": "varastoalue",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 38900],
+			"paint": {
+				"fill-color": "#f3f3e6"
+			}
+		},
+		{
+			"id": "allas",
+			"type": "fill",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 44300],
+			"paint": {
+				"fill-color": "#80ffff",
+				"fill-outline-color": "#000000"
+			}
+		},
+		{
 			"id": "vesi_viiva",
 			"type": "line",
 			"source": "taustakartta",
@@ -179,6 +271,168 @@
 			"paint": {
 				"line-color": "#c8c4c5",
 				"line-width": 0.5
+			}
+		},
+		{
+			"id": "keinotekoinen_rantaviiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 30100],
+			"paint": {
+				"line-color": "#c8c4c5",
+				"line-width": 0.5
+			}
+		},
+		{
+			"id": "lentokentta_viiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 32431, 32432],
+			"paint": {
+				"line-width": 7,
+				"line-color": "#c8c4c5"
+			}
+		},
+		{
+			"id": "lentokentta_viiva2",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 32431, 32432],
+			"paint": {
+				"line-width": 6,
+				"line-color": "#fde9db"
+			}
+		},
+		{
+			"id": "rautatie_reuna",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 14110, 14111, 14112, 14121, 14131],
+			"paint": {
+				"line-color": "#ccc",
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 2, 20, 40]
+			}
+		},
+		{
+			"id": "rautatie_taytto",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 14110, 14111, 14112, 14121, 14131],
+			"paint": {
+				"line-color": "#fcfcfc",
+				"line-dasharray": [2, 2],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1.5, 20, 30]
+			}
+		},
+		{
+			"id": "tiet_tunnelissa",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": [
+				"all",
+				["in", "kohdeluokka", 12111, 12112, 12121, 12122, 12131, 12132, 12136, 12141, 12313, 12314],
+				["==", ["get", "tasosijainti"], -1]
+			],
+			"paint": {
+				"line-color": "#ccc",
+				"line-dasharray": [32, 16],
+				"line-width": ["interpolate", ["exponential", 1.55], ["zoom"], 6, 1, 20, 20]
+			}
+		},
+		{
+			"id": "sahkolinja",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 22311, 22312],
+			"paint": {
+				"line-color": ["match", ["get", "kohdeluokka"], 22311, "#000000", 22312, "#000000", "#000000"],
+				"line-width": ["match", ["get", "kohdeluokka"], 22311, 3.5, 22312, 2.5, 2.5]
+			}
+		},
+		{
+			"id": "pato",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 30300],
+			"paint": {
+				"line-color": "#000000",
+				"line-width": 5
+			}
+		},
+		{
+			"id": "luiska",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 34800],
+			"paint": {
+				"line-color": "#660C00",
+				"line-width": 2.5
+			}
+		},
+		{
+			"id": "taajama_reunaviiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 40100],
+			"paint": {
+				"line-color": "#000000",
+				"line-width": 1
+			}
+		},
+		{
+			"id": "rakennusalue_reunaviiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 42200],
+			"paint": {
+				"line-color": "#000000",
+				"line-width": 1
+			}
+		},
+		{
+			"id": "suojelualue_reunaviiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 72000],
+			"paint": {
+				"line-color": "#00b300",
+				"line-width": 4,
+				"line-dasharray": [40, 15]
+			}
+		},
+		{
+			"id": "kunnanraja",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["==", "kohdeluokka", 84113],
+			"paint": {
+				"line-color": "#4d00ff",
+				"line-width": 5,
+				"line-dasharray": [50, 12.5, 5, 12.5]
+			}
+		},
+		{
+			"id": "rakennus_reunaviiva",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 42111, 42112, 42121, 42122, 42151, 42162],
+			"paint": {
+				"line-color": "#000000",
+				"line-width": 2
 			}
 		},
 
@@ -345,11 +599,47 @@
 			"type": "symbol",
 			"source": "taustakartta",
 			"source-layer": "korkeussuhteet",
-			"filter": ["in", "kohdeluokka", 52191, 36291],
+			"filter": ["in", "kohdeluokka", 52191, 36291, 44803, 45303],
 			"layout": {
 				"text-field": ["coalesce", ["get", "teksti"], ""],
-				"text-font": ["Liberation Sans NLSFI"],
-				"text-size": 10
+				"text-font": ["Noto Sans"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					5,
+					11,
+					7,
+					12,
+					10,
+					13,
+					14,
+					14,
+					20,
+					15,
+					28,
+					16,
+					39
+				]
 			},
 			"paint": {
 				"text-color": "#A66329",
@@ -562,10 +852,21 @@
 			"type": "line",
 			"source": "taustakartta",
 			"source-layer": "korkeussuhteet",
-			"filter": ["in", "kohdeluokka", 42131, 42161],
+			"filter": ["in", "kohdeluokka", 42131, 42161, 44500, 45111, 45112, 45700],
 			"paint": {
 				"line-color": "#1A1A1A",
 				"line-width": 0.8
+			}
+		},
+		{
+			"id": "aita",
+			"type": "line",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 44211, 44213],
+			"paint": {
+				"line-color": "#000000",
+				"line-width": 2.5
 			}
 		},
 		{
@@ -598,7 +899,7 @@
 					["coalesce", ["get", "nimi_ruotsi"], ""],
 					{}
 				],
-				"text-font": ["Liberation Sans NLSFI"],
+				"text-font": ["Noto Sans"],
 				"symbol-placement": "line",
 				"text-size": 11
 			},
@@ -617,8 +918,44 @@
 			"filter": ["in", "kohdeluokka", 12106, 12181, 12182, 12183],
 			"layout": {
 				"text-field": ["coalesce", ["get", "teksti"], ""],
-				"text-font": ["Liberation Sans NLSFI"],
-				"text-size": 11
+				"text-font": ["Noto Sans"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					8,
+					12,
+					11,
+					13,
+					16,
+					14,
+					22,
+					15,
+					31,
+					16,
+					43
+				]
 			},
 			"paint": {
 				"text-halo-width": 2,
@@ -635,8 +972,47 @@
 			"filter": ["in", "kohdeluokka", 36101, 36201, 36301, 36410, 36420, 36490, 38201, 38501],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-font": ["Liberation Sans NLSFI"],
-				"text-size": 12
+				"text-font": ["Noto Sans Italic Left"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					9,
+					12,
+					12,
+					13,
+					17,
+					14,
+					24,
+					15,
+					34,
+					16,
+					47
+				],
+				"text-offset": ["case", ["==", ["get", "kielikoodi"], "fin"], ["literal", [0, 0]], ["literal", [0, 1]]],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true
 			},
 			"paint": {
 				"text-halo-width": 2,
@@ -676,8 +1052,47 @@
 			],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-font": ["Liberation Sans NLSFI Right"],
-				"text-size": 12
+				"text-font": ["Noto Sans Italic"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					9,
+					12,
+					12,
+					13,
+					17,
+					14,
+					24,
+					15,
+					34,
+					16,
+					47
+				],
+				"text-offset": ["case", ["==", ["get", "kielikoodi"], "fin"], ["literal", [0, 0]], ["literal", [0, 1]]],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true
 			},
 			"paint": {
 				"text-halo-width": 2,
@@ -691,11 +1106,56 @@
 			"type": "symbol",
 			"source": "taustakartta",
 			"source-layer": "korkeussuhteet",
-			"filter": ["in", "kohdeluokka", 42101, 42201, 44301, 44901, 48111, 48112, 48120, 48130, 48190],
+			"filter": ["in", "kohdeluokka", 14201, 42101, 42201, 44301, 44901, 48111, 48112, 48120, 48130, 48190],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-transform": ["case", ["in", ["get", "kohdeluokka"], 44301, 44901, 48120], "uppercase", "none"],
-				"text-size": 12
+				"text-font": [
+					"case",
+					["==", ["get", "kirjasintyyppikoodi"], 20],
+					["literal", ["Noto Sans Bold"]],
+					["literal", ["Noto Sans"]]
+				],
+				"text-transform": ["case", ["==", ["get", "versaalitieto"], 1], "uppercase", "none"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					9,
+					12,
+					12,
+					13,
+					17,
+					14,
+					24,
+					15,
+					34,
+					16,
+					47
+				],
+				"text-offset": ["case", ["==", ["get", "kielikoodi"], "fin"], ["literal", [0, 0]], ["literal", [0, 1]]],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true
 			},
 			"paint": {
 				"text-halo-width": 2,
@@ -712,13 +1172,106 @@
 			"filter": ["in", "kohdeluokka", 72201, 72303, 72403, 72502, 72601, 72701, 72801],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-font": ["Liberation Sans NLSFI"],
-				"text-size": 12
+				"text-font": ["Noto Sans"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					9,
+					12,
+					12,
+					13,
+					17,
+					14,
+					24,
+					15,
+					34,
+					16,
+					47
+				],
+				"text-offset": ["case", ["==", ["get", "kielikoodi"], "fin"], ["literal", [0, 0]], ["literal", [0, 1]]],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true
 			},
 			"paint": {
 				"text-halo-width": 2,
 				"text-halo-color": "rgba(255, 255, 255, 1)",
 				"text-color": "hsl(117, 79%, 31%)",
+				"text-halo-blur": 1
+			}
+		},
+		{
+			"id": "paikannimet",
+			"type": "symbol",
+			"source": "taustakartta",
+			"source-layer": "korkeussuhteet",
+			"filter": ["in", "kohdeluokka", 96001],
+			"layout": {
+				"text-field": ["coalesce", ["get", "nimi_suomi"], ["get", "teksti"], ""],
+				"text-font": ["Noto Sans"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					6,
+					11,
+					8,
+					12,
+					11,
+					13,
+					16,
+					14,
+					22,
+					15,
+					31,
+					16,
+					43
+				]
+			},
+			"paint": {
+				"text-halo-width": 2,
+				"text-halo-color": "rgba(255, 255, 255, 1)",
+				"text-color": "hsl(0, 0%, 15%)",
 				"text-halo-blur": 1
 			}
 		},
@@ -730,8 +1283,47 @@
 			"filter": ["in", "kohdeluokka", 84301, 84302, 84303],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-font": ["Liberation Sans NLSFI Bold"],
-				"text-size": ["interpolate", ["exponential", 1.35], ["zoom"], 1, 16, 14, 28]
+				"text-font": ["Noto Sans Bold"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					5,
+					10,
+					7,
+					11,
+					10,
+					12,
+					14,
+					13,
+					20,
+					14,
+					28,
+					15,
+					39,
+					16,
+					55
+				],
+				"text-offset": ["case", ["==", ["get", "kielikoodi"], "fin"], ["literal", [0, 0]], ["literal", [0, 1]]],
+				"text-allow-overlap": true,
+				"text-ignore-placement": true
 			},
 			"paint": {
 				"text-halo-width": 2,
@@ -795,8 +1387,44 @@
 			],
 			"layout": {
 				"text-field": ["get", "teksti"],
-				"text-font": ["Liberation Sans NLSFI"],
-				"text-size": 10
+				"text-font": ["Noto Sans"],
+				"text-size": [
+					"interpolate",
+					["exponential", 1.4],
+					["zoom"],
+					1,
+					4,
+					2,
+					4,
+					3,
+					4,
+					4,
+					4,
+					5,
+					4,
+					6,
+					4,
+					7,
+					4,
+					8,
+					4,
+					9,
+					4,
+					10,
+					5,
+					11,
+					7,
+					12,
+					10,
+					13,
+					14,
+					14,
+					20,
+					15,
+					28,
+					16,
+					39
+				]
 			},
 			"paint": {
 				"text-halo-width": 2,

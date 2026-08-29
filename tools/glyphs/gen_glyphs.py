@@ -324,7 +324,12 @@ def main():
     face.set_char_size(args.height * 64)
     if args.skew:
         tan = math.tan(math.radians(args.skew))
-        matrix = freetype.Matrix(int(tan * 0x10000), 0, 0, 0x10000)
+        # Horizontal shear: x' = x + tan*y ; y' = y
+        # freetype.Matrix is (xx, xy, yx, yy) in 16.16 fixed point with
+        #   x' = xx*x + yx*y
+        #   y' = xy*x + yy*y
+        # So the shear goes in the yx slot (x depends on y).
+        matrix = freetype.Matrix(0x10000, 0, int(tan * 0x10000), 0x10000)
         face.set_transform(matrix, freetype.Vector(0, 0))
 
     total_glyphs = 0

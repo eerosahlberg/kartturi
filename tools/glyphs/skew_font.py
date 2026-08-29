@@ -25,7 +25,12 @@ def skew_font(in_path, out_path, angle_deg):
         if glyph_name == '.notdef':
             continue
         ttpen = TTGlyphPen(glyph_set)
-        skew_pen = TransformPen(ttpen, (1.0, shear_x, 0.0, 1.0, 0.0, 0.0))
+        # Horizontal shear: x' = x + shear_x*y ; y' = y
+        # TransformPen matrix is (xx, xy, yx, yy, dx, dy) with
+        #   x' = xx*x + yx*y + dx
+        #   y' = xy*x + yy*y + dy
+        # So the shear goes in the yx slot (x depends on y).
+        skew_pen = TransformPen(ttpen, (1.0, 0.0, shear_x, 1.0, 0.0, 0.0))
         try:
             glyph_set[glyph_name].draw(skew_pen)
         except Exception:

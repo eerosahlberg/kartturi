@@ -26,6 +26,14 @@ The map needs these fontstacks (matching the `text-font` values in `style.json`)
 > **Backslant**: `NotoSans-Backslant.ttf` is synthesized from `NotoSans-Regular.ttf`
 > by shearing its outlines `x' = x + tan(-12.02°)·y` (see `skew_font.py`), so the
 > water-name glyphs lean LEFT, opposite to the terrain italic which leans RIGHT.
+>
+> **Shear axis (fixed 2026-08-27)**: The shear must be **horizontal** — the top
+> of each letter shifts left/right while the bottom stays put. In
+> `skew_font.py` the `TransformPen` matrix is `(1.0, 0.0, shear_x, 1.0, 0.0, 0.0)`
+> (shear in the `yx` slot: `x' = x + shear_x·y`). The old code put the shear in
+> the `xy` slot (`y' = y + shear_x·x`), which sheared vertically and made the
+> right side lower than the left. The same fix was applied to the `--skew`
+> option in `gen_glyphs.py` (`freetype.Matrix(0x10000, 0, tan*0x10000, 0x10000)`).
 
 ## Generated output
 
@@ -76,8 +84,7 @@ Options:
 > "unknown pbf field type exception" and no text renders.
 
 > **Metrics (fixed 2026-08-27)**: FreeType's `slot.advance.x` is in 26.6
-> fixed-point (1/64 px); MapLibre expects pixels, so the generator divides by
-> 64. The `sint32` zigzag encoding for `left`/`top` was also corrected (the old
+> fixed-point (1/64 px); MapLibre expects pixels, so the generator divides by 64. The `sint32` zigzag encoding for `left`/`top` was also corrected (the old
 > negative branch corrupted metrics). Without these, glyphs render with wrong
 > spacing/offsets or not at all.
 
